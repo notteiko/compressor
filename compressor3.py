@@ -1,20 +1,24 @@
-import sys
-import re
-import os
-from time import sleep
-from PyQt6.QtWidgets import (
-    QApplication, QWidget, QPushButton, QVBoxLayout,
-    QHBoxLayout, QSlider, QStyle, QTextEdit, QLabel, QComboBox, QGraphicsOpacityEffect, QMessageBox, QProgressBar, QCheckBox, QSizePolicy
-)
-from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PyQt6.QtMultimediaWidgets import QVideoWidget
-from PyQt6.QtCore import QUrl, Qt, QProcess, QMimeData
-from PyQt6.QtGui import QPixmap, QColor, QFont
+try:
+    from PyQt6.QtWidgets import (
+        QApplication, QWidget, QPushButton, QVBoxLayout,
+        QHBoxLayout, QSlider, QStyle, QTextEdit, QLabel, QComboBox, QGraphicsOpacityEffect, QMessageBox, QProgressBar, QCheckBox, QSizePolicy
+    )
+    from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+    from PyQt6.QtMultimediaWidgets import QVideoWidget
+    from PyQt6.QtCore import QUrl, Qt, QProcess, QMimeData
+    from PyQt6.QtGui import QPixmap, QColor, QFont
+except:
+    import os
+    os.system("pip install pyqt6")
 import subprocess
 import winreg as reg
 import urllib.request
 import zipfile
 import ctypes
+import sys
+import re
+import os
+from time import sleep
 
 def is_admin():
     try:
@@ -77,7 +81,7 @@ def install():
         with reg.CreateKey(reg.HKEY_CURRENT_USER, f"Software\\Classes\\SystemFileAssociations\\{extension}\\shell\\Compress\\command") as key:
             reg.SetValue(key, "", reg.REG_SZ, f'pyw "{sys.argv[0]}" "%1"')
             print(f"Software\\Classes\\SystemFileAssociations\\{extension}\\shell\\Compress\\command")
-            
+
     try:
         subprocess.check_output(["ffmpeg", "-version"])
     except:
