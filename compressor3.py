@@ -1,12 +1,5 @@
 try:
-    from PyQt6.QtWidgets import (
-        QApplication, QWidget, QPushButton, QVBoxLayout,
-        QHBoxLayout, QSlider, QStyle, QTextEdit, QLabel, QComboBox, QGraphicsOpacityEffect, QMessageBox, QProgressBar, QCheckBox, QSizePolicy
-    )
-    from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
-    from PyQt6.QtMultimediaWidgets import QVideoWidget
-    from PyQt6.QtCore import QUrl, Qt, QProcess, QMimeData
-    from PyQt6.QtGui import QPixmap, QColor, QFont
+    import PyQt6
 except:
     import os
     os.system("pip install pyqt6")
@@ -19,6 +12,11 @@ import sys
 import re
 import os
 from time import sleep
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout,QHBoxLayout, QSlider, QStyle, QTextEdit, QLabel, QComboBox, QGraphicsOpacityEffect, QMessageBox, QProgressBar, QCheckBox, QSizePolicy
+from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PyQt6.QtMultimediaWidgets import QVideoWidget
+from PyQt6.QtCore import QUrl, Qt, QProcess, QMimeData
+from PyQt6.QtGui import QPixmap, QColor, QFont
 
 def is_admin():
     try:
