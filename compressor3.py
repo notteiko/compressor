@@ -64,12 +64,6 @@ def install():
         relaunch_as_admin()
     app_folder = os.path.join(os.environ["LOCALAPPDATA"], "Compressor")
     os.makedirs(app_folder, exist_ok=True)
-    file_path = os.path.join(app_folder, "compressor.py")
-    url = "https://raw.githubusercontent.com/notteiko/compressor/refs/heads/main/compressor3.py"
-    print(f"Stahujem script z: {url}\ndo {file_path}")
-    urllib.request.urlretrieve(url, file_path)
-    print("Stiahnuty")
-
     extension_list = [".mov", ".mp4", ".mkv", ".avi", ".webm"]
     print("Zapisujem do registy:")
     for extension in extension_list:
