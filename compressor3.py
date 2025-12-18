@@ -145,7 +145,7 @@ def get_framerate(video_path):
         "-show_entries", "stream=r_frame_rate",
         video_path
     ]
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
     rate = result.stdout.strip()
     if "/" in rate:
         num, denom = rate.split("/")
@@ -162,7 +162,7 @@ def get_framecount(video_path):
         "-of", "csv=p=0",
         video_path
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
     return result.stdout.strip()
 
 def get_bitrate(video_path):
@@ -173,7 +173,7 @@ def get_bitrate(video_path):
         "-of", "default=noprint_wrappers=1:nokey=1",
         video_path
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
     return int(result.stdout.strip())
 
 class ClickableSlider(QSlider):
@@ -269,7 +269,7 @@ class VideoPlayer(QWidget):
         controls.addWidget(self.btn2)
 
         layout.addLayout(controls)
-        self.file = r"E:\Users\Teiko\Videos\Replay 2025-12-07 16-59-49.mp4"
+        self.file = sys.argv[1]
 
         layout_pod_playerom = QHBoxLayout()
 
@@ -384,7 +384,7 @@ class VideoPlayer(QWidget):
         self.player.pause()
         
         try:
-            cuda_output = subprocess.check_output(["nvcc", "--version"]).decode()
+            cuda_output = subprocess.check_output(["nvcc", "--version"], creationflags=subprocess.CREATE_NO_WINDOW).decode()
             self.cuda_text.setText(cuda_output.replace("\n", "").split(" ")[-1])
         except Exception:
             self.cuda_text.setText("bez CUDA podpory, nainstaluj pre HW render")
