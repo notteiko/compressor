@@ -12,7 +12,7 @@ import sys
 import re
 import os
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout,QHBoxLayout, QSlider, QStyle, QTextEdit, QLabel, QComboBox, QGraphicsOpacityEffect, QMessageBox, QProgressBar, QCheckBox, QSizePolicy
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout,QHBoxLayout, QSlider, QStyle, QTextEdit, QLabel, QComboBox, QGraphicsOpacityEffect, QMessageBox, QProgressBar, QCheckBox, QSizePolicy, QRadioButton, QButtonGroup
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtMultimediaWidgets import QVideoWidget
 from PyQt6.QtCore import QUrl, Qt, QProcess, QMimeData
@@ -62,7 +62,7 @@ def install():
     if not is_admin():
         print("Re-launching as administrator...")
         relaunch_as_admin()
-    app_folder = os.path.join(os.environ["LOCALAPPDATA"], "Compressor")
+    app_folder = os.path.join(os.environ["LOCALAPPDATA"], "compressor-main")
     os.makedirs(app_folder, exist_ok=True)
     extension_list = [".mov", ".mp4", ".mkv", ".avi", ".webm"]
     print("Zapisujem do registy:")
@@ -246,13 +246,14 @@ class VideoPlayer(QWidget):
 
         layout.addWidget(self.slider)
 
+        palicka = os.path.join(os.environ["LOCALAPPDATA"], "compressor-main\\palicka.png")
         self.prvy_point = QLabel(self)
-        pix = QPixmap(r"E:\Users\Teiko\Downloads\ofsdksdfo.png")
+        pix = QPixmap(palicka)
         self.prvy_point.setPixmap(pix.scaled(20,30))
         self.prvy_point.hide()
 
         self.druhy_point = QLabel(self)
-        pix = QPixmap(r"E:\Users\Teiko\Downloads\ofsdksdfo.png")
+        pix = QPixmap(palicka)
         self.druhy_point.setPixmap(pix.scaled(20,30))
         self.druhy_point.hide()
         
@@ -317,6 +318,34 @@ class VideoPlayer(QWidget):
         self.resolution_layout.addWidget(self.resolution_moznosti)
         self.resolution_moznosti.setMaximumSize(108,28)
         self.resolution_moznosti.setPlainText("1920x1080")
+        self.resolution_moznosti.setContentsMargins(0,2,0,0)
+
+        self.gain_layout = QHBoxLayout()
+        self.checkbox_gain = QCheckBox("Gain")
+        self.slider_gain = ClickableSlider(Qt.Orientation.Horizontal)
+        self.slider_gain.setRange(-16, 16)
+        self.slider_gain.sliderMoved.connect(self.gain_label_update)
+        self.slider_gain_label = QLabel("0db")
+        self.gain_layout.addWidget(self.checkbox_gain)
+        self.gain_layout.addWidget(self.slider_gain)
+        self.gain_layout.addWidget(self.slider_gain_label)
+        self.gain_layout.setContentsMargins(0,5,0,0)
+
+        self.file_format_layout = QHBoxLayout()
+        self.file_format_group = QButtonGroup()
+        self.file_format_mp3 = QRadioButton("mp3")
+        self.file_format_mp4 = QRadioButton("mp4")
+        self.file_format_group.addButton(self.file_format_mp3)
+        self.file_format_group.addButton(self.file_format_mp4)
+        self.file_format_layout.addWidget(self.file_format_mp3, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.file_format_layout.addWidget(self.file_format_mp4, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.file_format_mp4.setChecked(True)
+        self.file_format_layout.setContentsMargins(0,4,0,0)
+
+        self.po_dokonceni_label = QLabel("Po dokončení: ")
+        self.skopirovat_checkbox = QCheckBox("Skopírovať")
+        self.otvorit_checkbox = QCheckBox("Otvoriť priečinok")
+        self.vypnut_checkbox = QCheckBox("Vypnúť kompresor")
 
         self.casovy_usek = QLabel("00:00.000-00:00.000")
         self.casovy_usek_total_cas = QLabel("")
@@ -368,7 +397,13 @@ class VideoPlayer(QWidget):
         layout2.addLayout(self.compress_layout)
         layout2.addWidget(self.textedit_compress, alignment=Qt.AlignmentFlag.AlignRight)
         layout2.addLayout(self.resolution_layout)
-        layout2.addLayout(self.startTlacitko_wrapper, stretch=1)
+        layout2.addLayout(self.gain_layout)
+        layout2.addLayout(self.file_format_layout)
+        layout2.addWidget(self.po_dokonceni_label, stretch=1, alignment=Qt.AlignmentFlag.AlignBottom)
+        layout2.addWidget(self.skopirovat_checkbox)
+        layout2.addWidget(self.otvorit_checkbox)
+        layout2.addWidget(self.vypnut_checkbox)
+        layout2.addLayout(self.startTlacitko_wrapper)
         layout2.addLayout(self.volume_wrapper)
         layout2.setContentsMargins(10,10,10,0)
 
@@ -381,6 +416,7 @@ class VideoPlayer(QWidget):
         self.setWindowTitle("Compressor")
         self.player.setSource(QUrl.fromLocalFile(self.file))
         self.player.play()
+        #self.player.setPosition()
         self.player.pause()
         
         try:
@@ -505,6 +541,9 @@ class VideoPlayer(QWidget):
     def openDone(self):
         os.popen(f'explorer /select,"{self.path_trimmed}_compressed.mp4"')
     
+    def gain_label_update(self):
+        self.slider_gain_label.setText(str(self.slider_gain.value()) + "db")
+
 if __name__ == "__main__":
     try:
         sys.argv[1]
@@ -512,6 +551,7 @@ if __name__ == "__main__":
         player = VideoPlayer()
         player.resize(800, 500)
         player.show()
-    except:
+    except Exception as e:
+        print(e)
         install()
     sys.exit(app.exec())
