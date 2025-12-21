@@ -77,6 +77,7 @@ def install():
 
     try:
         subprocess.check_output(["ffmpeg", "-version"])
+        print("ffmpeg ok")
     except:
         print("Instalujem FFmpeg")
         ffmpeg_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
@@ -196,8 +197,8 @@ class VideoPlayer(QWidget):
         super().__init__()
 
 
-        config = configparser.ConfigParser()
-        config.read(os.path.join(os.environ["LOCALAPPDATA"], "compressor-main\\config.ini"))
+        self.config = configparser.ConfigParser()
+        self.config.read(os.path.join(os.environ["LOCALAPPDATA"], "compressor-main\\config.ini"))
 
         self.process = QProcess()
         self.process.readyReadStandardOutput.connect(self.on_stdout)
@@ -301,10 +302,10 @@ class VideoPlayer(QWidget):
 
         self.compress_layout = QHBoxLayout()
         self.tlacitko_compress = QCheckBox("Compress to")
-        self.tlacitko_compress.setChecked(config.getboolean("all", "compress"))
+        self.tlacitko_compress.setChecked(self.config.getboolean("all", "compress"))
         self.size_moznosti = QTextEdit()
         self.size_moznosti.setMaximumSize(56,28)
-        self.size_moznosti.setPlainText(str(config.getint("all", "compress_mb")))
+        self.size_moznosti.setPlainText(str(self.config.getint("all", "compress_mb")))
         self.compress_layout.addWidget(self.tlacitko_compress)
         self.compress_layout.addWidget(self.size_moznosti, alignment=Qt.AlignmentFlag.AlignLeft)
         self.mb_label = QLabel("MB")
@@ -318,20 +319,20 @@ class VideoPlayer(QWidget):
 
         self.resolution_layout = QHBoxLayout()
         self.tlacitko_resolution = QCheckBox("Resolution")
-        self.tlacitko_resolution.setChecked(config.getboolean("all", "resolution"))
+        self.tlacitko_resolution.setChecked(self.config.getboolean("all", "resolution"))
         self.resolution_moznosti = QTextEdit()
         self.resolution_layout.addWidget(self.tlacitko_resolution)
         self.resolution_layout.addWidget(self.resolution_moznosti)
         self.resolution_moznosti.setMaximumSize(108,28)
-        self.resolution_moznosti.setPlainText(config.get("all", "resolution_px"))
+        self.resolution_moznosti.setPlainText(self.config.get("all", "resolution_px"))
         self.resolution_moznosti.setContentsMargins(0,2,0,0)
 
         self.gain_layout = QHBoxLayout()
         self.checkbox_gain = QCheckBox("Gain")
-        self.checkbox_gain.setChecked(config.getboolean("all", "gain"))
+        self.checkbox_gain.setChecked(self.config.getboolean("all", "gain"))
         self.slider_gain = ClickableSlider(Qt.Orientation.Horizontal)
         self.slider_gain.setRange(-16, 16)
-        self.slider_gain.setValue(config.getint("all", "gain_value"))
+        self.slider_gain.setValue(self.config.getint("all", "gain_value"))
         self.slider_gain.sliderMoved.connect(self.gain_label_update)
         self.slider_gain_label = QLabel("0db")
         self.gain_layout.addWidget(self.checkbox_gain)
@@ -342,23 +343,22 @@ class VideoPlayer(QWidget):
         self.file_format_layout = QHBoxLayout()
         self.file_format_group = QButtonGroup()
         self.file_format_mp3 = QRadioButton("mp3")
-        self.file_format_mp3.setChecked(config.getboolean("all", "mp3"))
+        self.file_format_mp3.setChecked(self.config.getboolean("all", "mp3"))
         self.file_format_mp4 = QRadioButton("mp4")
-        self.file_format_mp4.setChecked(config.getboolean("all", "mp4"))
+        self.file_format_mp4.setChecked(self.config.getboolean("all", "mp4"))
         self.file_format_group.addButton(self.file_format_mp3)
         self.file_format_group.addButton(self.file_format_mp4)
         self.file_format_layout.addWidget(self.file_format_mp3, alignment=Qt.AlignmentFlag.AlignCenter)
         self.file_format_layout.addWidget(self.file_format_mp4, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.file_format_mp4.setChecked(True)
         self.file_format_layout.setContentsMargins(0,4,0,0)
 
         self.po_dokonceni_label = QLabel("Po dokončení: ")
         self.skopirovat_checkbox = QCheckBox("Skopírovať")
-        self.skopirovat_checkbox.setChecked(config.getboolean("all", "skopirovat"))
+        self.skopirovat_checkbox.setChecked(self.config.getboolean("all", "skopirovat"))
         self.otvorit_checkbox = QCheckBox("Otvoriť priečinok")
-        self.otvorit_checkbox.setChecked(config.getboolean("all", "otvorit"))
+        self.otvorit_checkbox.setChecked(self.config.getboolean("all", "otvorit"))
         self.vypnut_checkbox = QCheckBox("Vypnúť kompresor")
-        self.vypnut_checkbox.setChecked(config.getboolean("all", "vypnut"))
+        self.vypnut_checkbox.setChecked(self.config.getboolean("all", "vypnut"))
 
         self.casovy_usek = QLabel("00:00.000-00:00.000")
         self.casovy_usek_total_cas = QLabel("")
@@ -375,7 +375,7 @@ class VideoPlayer(QWidget):
         self.render_progress.setTextVisible(False)
         self.render_progress.hide()
 
-        self.startTlacitko = QPushButton("OZNAČ ČASŤ VIDEA")
+        self.startTlacitko = QPushButton("OZNAČ 1. BOD (ENTER)")
         self.startTlacitko.setStyleSheet("background-color: #570000;")
         self.startTlacitko.setMinimumHeight(50)
         self.startTlacitko_wrapper = QVBoxLayout()
@@ -400,9 +400,10 @@ class VideoPlayer(QWidget):
 
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
         self.volume_slider.setRange(0, 100)
-        self.volume_slider.setValue(config.getint("all", "volume"))
+        self.volume_slider.setValue(self.config.getint("all", "volume"))
         self.audio.setVolume(50 / 100)
         self.volume_slider.valueChanged.connect(self.set_volume)
+        self.volume_slider.valueChanged.connect(self.update_config)
         self.volume_layout.addWidget(self.volume_slider, alignment=Qt.AlignmentFlag.AlignBottom)
         self.volume_wrapper = QHBoxLayout()
         self.volume_wrapper.addLayout(self.volume_layout)
@@ -496,7 +497,6 @@ class VideoPlayer(QWidget):
         if event.key() == Qt.Key.Key_Return:
             handle_width = self.slider.style().pixelMetric(self.slider.style().PixelMetric.PM_SliderLength)
             slider_width = self.slider.width()
-            slider_height = self.slider.height()
             usable_width = slider_width - handle_width
             val = self.slider.value()
             min_val = self.slider.minimum()
@@ -504,15 +504,17 @@ class VideoPlayer(QWidget):
             handle_x = int((val - min_val) / (max_val - min_val) * usable_width)
             handle_x += (handle_width // 2) + 2
             self.total_ms = getattr(self, 'total_ms', 0)
-            minutes = self.total_ms // 60000
-            seconds = (self.total_ms % 60000) // 1000
-            milliseconds = self.total_ms % 1000
+            self.minutes = self.total_ms // 60000
+            self.seconds = (self.total_ms % 60000) // 1000
+            self.milliseconds = self.total_ms % 1000
             self.casovy_usek.show()
             if self.enterCounter == 0:
                 self.prvy_point.setGeometry(handle_x, 397, 20, 30)
                 self.prvy_point.show()
                 self.prvy_point_cas = self.slider.value()
-                self.casovy_usek.setText(f"{minutes:02}:{seconds:02}.{milliseconds:03} - ")
+                self.casovy_usek.setText(f"{self.minutes:02}:{self.seconds:02}.{self.milliseconds:03} - ")
+                self.startTlacitko.setStyleSheet(f"background-color: #b32a00;")
+                self.startTlacitko.setText("OZNAČ 2. BOD (ENTER)")
                 print(self.total_ms)
             elif self.enterCounter == 1:
                 self.druhy_point.setGeometry(handle_x, 397, 20, 30)
@@ -521,7 +523,7 @@ class VideoPlayer(QWidget):
                 self.druhy_point_cas = self.slider.value()
                 self.rect_widget.setGeometry(self.prvy_point.x()+10, 405, self.druhy_point.x()-self.prvy_point.x(), 20)  # x, y, width, height
                 self.rect_widget.show()
-                self.casovy_usek.setText(self.casovy_usek.text() + f"{minutes:02}:{seconds:02}.{milliseconds:03}")
+                self.casovy_usek.setText(self.casovy_usek.text() + f"{self.minutes:02}:{self.seconds:02}.{self.milliseconds:03}")
                 self.casovy_usek_total_cas.show()
                 self.casovy_usek_total_cas.setText(str(round(((self.druhy_point_cas - self.prvy_point_cas)/1000), 1)) + "s")
                 print(self.total_ms)
@@ -530,7 +532,23 @@ class VideoPlayer(QWidget):
                 self.startTlacitko.setText("ŠTART (ENTER)")
             elif self.enterCounter == 2:
                 self.start()
-            self.enterCounter += 1
+            if self.enterCounter != 2:
+                self.enterCounter += 1
+        if event.key() == Qt.Key.Key_Backspace:
+            if self.enterCounter == 2:
+                self.druhy_point_cas = 0
+                self.rect_widget.hide()
+                self.druhy_point.hide()
+                self.casovy_usek_total_cas.hide()
+                self.casovy_usek_total_cas.setText("")
+                self.casovy_usek.setText(self.casovy_usek.text()[:-9])
+            elif self.enterCounter == 1:
+                self.prvy_point_cas = 0
+                self.prvy_point.hide()
+                self.casovy_usek.hide()
+            if self.enterCounter != 0:
+                self.enterCounter -= 1
+        print(self.enterCounter)
 
     def start(self):
         self.render_progress.show()
@@ -552,37 +570,44 @@ class VideoPlayer(QWidget):
         elif not self.file_format_mp4.isChecked():
             command = command + f' "{self.path_trimmed}_compressed.mp3"'
         print(command)
+        self.update_config()
         self.process.start(command)
 
-    def onProcessFinished(self):
-        self.startTlacitko.setText("DOKONČENÉ")
-        self.startTlacitko.setStyleSheet("background-color: #29de04;")
-        self.render_progress.hide()
-        self.render_progress_text.hide()
-        if self.skopirovat_checkbox.isChecked():
-            mime = QMimeData()
-            mime.setUrls([QUrl.fromLocalFile(f"{self.path_trimmed}_compressed.mp4")])
-            QApplication.clipboard().setMimeData(mime)
-            self.render_progress_text.setStyleSheet("font-size: 16pt;")
-            self.render_progress_text.setText("Skopírované!")
-        if self.otvorit_checkbox.isChecked():
-            os.popen(f'explorer /select,"{self.path_trimmed}_compressed.mp4"')
-        if self.vypnut_checkbox.isChecked():
-            sys.exit(0)
-    
-    def openDone(self):
-        os.popen(f'explorer /select,"{self.path_trimmed}_compressed.mp4"')
+    def onProcessFinished(self, exitStatus):
+        if exitStatus == 0:
+            self.startTlacitko.setText("DOKONČENÉ")
+            self.startTlacitko.setStyleSheet("background-color: #29de04;")
+            self.render_progress.hide()
+            self.render_progress_text.hide()
+            if self.skopirovat_checkbox.isChecked():
+                mime = QMimeData()
+                mime.setUrls([QUrl.fromLocalFile(f"{self.path_trimmed}_compressed.mp4")])
+                QApplication.clipboard().setMimeData(mime)
+                self.render_progress_text.setStyleSheet("font-size: 16pt;")
+                self.render_progress_text.setText("Skopírované!")
+            if self.otvorit_checkbox.isChecked():
+                os.popen(f'explorer /select,"{self.path_trimmed}_compressed.mp4"')
+            if self.vypnut_checkbox.isChecked():
+                sys.exit(0)
 
     def gain_label_update(self):
         self.slider_gain_label.setText(str(self.slider_gain.value()) + "db")
 
-#if __name__ == "__main__":
-#    sys.argv[1]
-#    app = QApplication(sys.argv)
-#    player = VideoPlayer()
-#    player.resize(800, 500)
-#    player.show()
-#    sys.exit(app.exec())
+    def update_config(self):
+        self.config["all"]["compress"] = str(self.tlacitko_compress.isChecked())
+        self.config["all"]["compress_mb"] = str(self.size_moznosti.toPlainText())
+        self.config["all"]["resolution"] = str(self.tlacitko_resolution.isChecked())
+        self.config["all"]["resolution_px"] = str(self.resolution_moznosti.toPlainText())
+        self.config["all"]["gain"] = str(self.checkbox_gain.isChecked())
+        self.config["all"]["gain_value"] = str(self.slider_gain.value())
+        self.config["all"]["mp3"] = str(self.file_format_mp3.isChecked())
+        self.config["all"]["mp4"] = str(self.file_format_mp4.isChecked())
+        self.config["all"]["skopirovat"] = str(self.skopirovat_checkbox.isChecked())
+        self.config["all"]["otvorit"] = str(self.otvorit_checkbox.isChecked())
+        self.config["all"]["vypnut"] = str(self.vypnut_checkbox.isChecked())
+        self.config["all"]["volume"] = str(self.volume_slider.value())
+        with open(os.path.join(os.environ["LOCALAPPDATA"], "compressor-main\\config.ini"), "w") as f:
+            self.config.write(f)
 
 if __name__ == "__main__":
     try:
