@@ -60,6 +60,7 @@ def run_installer(path):
         print(f"Installation failed: {e}")
 
 def install():
+    pyw_path = sys.executable.replace("python.exe","pythonw.exe")
     if not is_admin():
         print("Re-launching as administrator...")
         relaunch_as_admin()
@@ -68,12 +69,12 @@ def install():
     extension_list = [".mov", ".mp4", ".mkv", ".avi", ".webm"]
     print("Zapisujem do registy:")
     for extension in extension_list:
-        with reg.CreateKey(reg.HKEY_CURRENT_USER, f"Software\\Classes\\SystemFileAssociations\\{extension}\\shell\\Compress") as key:
+        with reg.CreateKey(reg.HKEY_CLASSES_ROOT, f"SystemFileAssociations\\{extension}\\shell\\Compress") as key:
             reg.SetValue(key, "", reg.REG_SZ, "Compress and Trim")
-            print(f"Software\\Classes\\SystemFileAssociations\\{extension}\\shell\\Compress")
-        with reg.CreateKey(reg.HKEY_CURRENT_USER, f"Software\\Classes\\SystemFileAssociations\\{extension}\\shell\\Compress\\command") as key:
-            reg.SetValue(key, "", reg.REG_SZ, f'pyw "{sys.argv[0]}" "%1"')
-            print(f"Software\\Classes\\SystemFileAssociations\\{extension}\\shell\\Compress\\command")
+            print(f"SystemFileAssociations\\{extension}\\shell\\Compress")
+        with reg.CreateKey(reg.HKEY_CLASSES_ROOT, f"SystemFileAssociations\\{extension}\\shell\\Compress\\command") as key:
+            reg.SetValue(key, "", reg.REG_SZ, f'{pyw_path} "{sys.argv[0]}" "%1"')
+            print(f"SystemFileAssociations\\{extension}\\shell\\Compress\\command")
 
     try:
         subprocess.check_output(["ffmpeg", "-version"])
